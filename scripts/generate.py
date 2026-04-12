@@ -94,6 +94,26 @@ def get_summary(entry):
     return text[:300]
 
 
+def fetch_full_text(url):
+    """Fetch a URL and return plain text of the article body (best-effort)."""
+    try:
+        resp = requests.get(url, timeout=FETCH_TIMEOUT,
+                            headers={"User-Agent": "RSS-Digest-Bot/1.0"})
+        resp.raise_for_status()
+        html = resp.text
+        # Remove script/style blocks
+        html = re.sub(r"<(script|style)[^>]*>.*?</(script|style)>", " ", html,
+                      flags=re.DOTALL | re.IGNORECASE)
+        # Strip all tags
+        text = re.sub(r"<[^>]+>", " ", html)
+        # Collapse whitespace
+        text = re.sub(r"\s+", " ", text).strip()
+        return text
+    except Exception as e:
+        print(f"  [full_text skip] {url}: {e}", file=sys.stderr)
+        return ""
+
+
 def get_source_name(feed, entry):
     """Best-effort blog/source name."""
     feed_title = getattr(feed.feed, "title", "") or ""
@@ -230,6 +250,9 @@ def main():
     if articles:
         print(f"Calling Qwen to select top {TOP_N}...")
         selected = select_top_articles(articles)
+        print(f"Fetching full text for {len(selected)} selected articles...")
+        for a in selected:
+            a["full_text"] = fetch_full_text(a["url"])
     else:
         selected = []
 

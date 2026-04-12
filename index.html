@@ -250,6 +250,26 @@
       margin-top: 0.75rem;
     }
 
+    .card-full-text {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.85;
+      border-top: 1px solid var(--border);
+      padding-top: 0.75rem;
+      margin-top: 0.75rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .card-full-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
     /* ── EMPTY / LOADING STATES ── */
     .state-box {
       text-align: center;
@@ -402,6 +422,10 @@
           </div>
           <p class="card-reason">${escHtml(a.reason)}</p>
           <p class="card-summary">${escHtml(a.summary)}</p>
+          ${a.full_text ? `
+          <div class="card-full-text">
+            <span class="card-full-label">原文</span>${escHtml(a.full_text)}
+          </div>` : ''}
         </article>
       `).join('');
     }

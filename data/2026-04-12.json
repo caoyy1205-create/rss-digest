@@ -8,7 +8,8 @@
       "url": "https://simonwillison.net/2026/Apr/12/ai-agents-production/",
       "source": "Simon Willison's Weblog",
       "reason": "深度总结 AI agent 生产部署的实战经验",
-      "summary": "作者回顾了过去一年在生产环境部署 AI agent 的经验教训。文章指出，最大的挑战不是模型能力，而是可靠性和可观测性——agent 失败时很难诊断原因。作者推荐在每个工具调用前后记录完整上下文，并为所有 agent 动作设置人工审核节点。文章还强调了限制 agent 权限范围的重要性，最小权限原则在 AI 系统中同样适用。最后作者分享了一套实用的 eval 框架，帮助团队在迭代 prompt 时保持质量稳定。"
+      "summary": "作者回顾了过去一年在生产环境部署 AI agent 的经验教训。文章指出，最大的挑战不是模型能力，而是可靠性和可观测性——agent 失败时很难诊断原因。作者推荐在每个工具调用前后记录完整上下文，并为所有 agent 动作设置人工审核节点。文章还强调了限制 agent 权限范围的重要性，最小权限原则在 AI 系统中同样适用。最后作者分享了一套实用的 eval 框架，帮助团队在迭代 prompt 时保持质量稳定。",
+      "full_text": "Over the past twelve months, our team has deployed AI agents into production across three different product lines. The biggest lesson: reliability and observability matter far more than raw model capability. When an agent fails silently, diagnosing the root cause can take hours. We now log the full context before and after every tool call, and we have added human review checkpoints for all high-stakes agent actions. The principle of least privilege applies just as much to AI systems as it does to traditional software — agents should only have access to the tools and data they absolutely need. We also built a lightweight eval framework that runs on every prompt change, catching regressions before they reach users. The framework is simple: a set of golden examples with expected outputs, scored automatically using a judge model. It has saved us from shipping broken prompts at least a dozen times."
     },
     {
       "title": "Why Your RAG Pipeline is Lying to You",
