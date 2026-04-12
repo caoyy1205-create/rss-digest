@@ -209,14 +209,27 @@ def clean_text(text):
 
 
 def fetch_full_text(url):
-    try:
-        resp = requests.get(url, timeout=FETCH_TIMEOUT,
-                            headers={"User-Agent": "RSS-Digest-Bot/1.0"})
-        resp.raise_for_status()
-        return extract_article_text(resp.text)
-    except Exception as e:
-        print(f"  [full_text skip] {url}: {e}", file=sys.stderr)
-        return ""
+    import time
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; RSS-Digest-Bot/1.0)"}
+    for attempt in range(2):
+        try:
+            resp = requests.get(url, timeout=FETCH_TIMEOUT, headers=headers)
+            if resp.status_code == 429:
+                if attempt == 0:
+                    time.sleep(5)
+                    continue
+                print(f"  [full_text skip] {url}: 429 rate limited", file=sys.stderr)
+                return ""
+            resp.raise_for_status()
+            text = extract_article_text(resp.text)
+            if len(text) < 100:
+                print(f"  [full_text skip] {url}: extracted text too short ({len(text)} chars)", file=sys.stderr)
+                return ""
+            return text
+        except Exception as e:
+            print(f"  [full_text skip] {url}: {e}", file=sys.stderr)
+            return ""
+    return ""
 
 
 def get_source_name(feed, entry):

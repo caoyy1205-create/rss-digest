@@ -548,13 +548,18 @@
           </div>
           <blockquote class="article-reason">${escHtml(a.reason)}</blockquote>
           <p class="article-summary">${escHtml(a.summary)}</p>
-          ${a.full_text ? `
           <div class="article-full">
+            ${a.full_text ? `
             <button class="article-full-toggle" onclick="toggleFull(this)">
               Read full article &nbsp;<span class="arrow">↓</span>
             </button>
             <div class="article-full-body">${toParagraphs(trimFullText(a.full_text, a.title))}</div>
-          </div>` : ''}
+            ` : `
+            <a class="article-full-toggle" href="${escHtml(a.url)}" target="_blank" rel="noopener">
+              Read on original site &nbsp;↗
+            </a>
+            `}
+          </div>
         </article>
         ${i < data.articles.length - 1 ? '<div class="ornament-divider">· · ·</div>' : ''}
       `).join('');
