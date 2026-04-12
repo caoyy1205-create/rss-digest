@@ -554,7 +554,7 @@
           <p>Gathering today's readings&hellip;</p>
         </div>`;
       try {
-        const res = await fetch(`data/${dateStr}.json?t=${Date.now()}`);
+        const res = await fetch(`https://raw.githubusercontent.com/caoyy1205-create/rss-digest/main/data/${dateStr}.json?t=${Date.now()}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         renderArticles(await res.json());
       } catch (e) {
@@ -564,7 +564,7 @@
 
     async function init() {
       try {
-        const res = await fetch(`data/index.json?t=${Date.now()}`);
+        const res = await fetch(`https://raw.githubusercontent.com/caoyy1205-create/rss-digest/main/data/index.json?t=${Date.now()}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const { dates = [] } = await res.json();
         if (!dates.length) { showError('No data yet. Check back tomorrow.'); return; }
