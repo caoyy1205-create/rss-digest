@@ -252,7 +252,7 @@
       -webkit-hyphens: auto;
     }
 
-    .article-summary::first-letter {
+    .article-summary:not(.article-summary--short)::first-letter {
       font-family: 'Playfair Display', serif;
       font-size: 3.2em;
       font-weight: 700;
@@ -260,6 +260,11 @@
       line-height: 0.75;
       margin: 0.08em 0.1em 0 0;
       color: var(--ink);
+    }
+
+    .article-summary--short {
+      font-style: italic;
+      color: var(--ink-light);
     }
 
     /* ── FULL TEXT TOGGLE ── */
@@ -511,7 +516,7 @@
             ${a.published ? ` &nbsp;&middot;&nbsp; ${escHtml(a.published)}` : ''}
           </div>
           <blockquote class="article-reason">${escHtml(a.reason)}</blockquote>
-          <p class="article-summary">${escHtml(a.summary)}</p>
+          <p class="article-summary${a.summary.length < 150 ? ' article-summary--short' : ''}">${escHtml(a.summary)}</p>
           <div class="article-full">
             ${a.full_text ? `
             <button class="article-full-toggle" onclick="toggleFull(this)">
