@@ -276,6 +276,7 @@ def fetch_recent_articles(feeds, cutoff):
                 "snippet": snippet,
                 "_score": score_article(title, snippet),
                 "_pub_dt": pub,
+                "_snippet_short": len(snippet) < 120,
             })
 
     print(f"Fetched {len(articles)} articles from last {LOOKBACK_HOURS}h")
@@ -346,7 +347,17 @@ def main():
         selected = select_top_articles(articles)
         print(f"Fetching full text for {len(selected)} selected articles...")
         for a in selected:
-            a["full_text"] = fetch_full_text(a["url"])
+            full = fetch_full_text(a["url"])
+            a["full_text"] = full
+            # If RSS snippet was too short, extract a better summary from full text
+            if a.pop("_snippet_short", False) and full and len(full) > 200:
+                # Take first ~500 chars ending at a sentence boundary
+                chunk = full[:600]
+                last = max(chunk.rfind(". "), chunk.rfind("! "), chunk.rfind("? "))
+                a["summary"] = chunk[:last + 1].strip() if last > 80 else chunk[:500].strip()
+        # Clean up internal fields
+        for a in selected:
+            a.pop("_snippet_short", None)
     else:
         selected = []
 
