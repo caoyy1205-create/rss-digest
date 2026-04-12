@@ -28,7 +28,7 @@ DATA_DIR = ROOT / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
 TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-LOOKBACK_HOURS = 24
+LOOKBACK_HOURS = 72  # 3 days to handle weekends / slow feeds
 FETCH_TIMEOUT = 10  # seconds per feed
 TOP_N = 5
 
@@ -197,9 +197,16 @@ def select_top_articles(articles):
         temperature=0.3,
     )
     raw = response.choices[0].message.content.strip()
+    print(f"Qwen raw response (first 500 chars):\n{raw[:500]}", file=sys.stderr)
 
-    # Extract JSON array from response
-    match = re.search(r"\[.*\]", raw, re.DOTALL)
+    # Extract JSON array from response (handle markdown code fences too)
+    json_str = raw
+    # Strip markdown code fences if present
+    json_str = re.sub(r"^```(?:json)?\s*", "", json_str, flags=re.MULTILINE)
+    json_str = re.sub(r"```\s*$", "", json_str, flags=re.MULTILINE)
+    json_str = json_str.strip()
+
+    match = re.search(r"\[.*\]", json_str, re.DOTALL)
     if not match:
         print(f"LLM response did not contain JSON array:\n{raw}", file=sys.stderr)
         return []
