@@ -184,8 +184,13 @@ def select_top_articles(articles):
         print(f"LLM response did not contain JSON array:\n{raw}", file=sys.stderr)
         return []
 
+    # Replace Chinese/typographic curly quotes inside JSON strings with ASCII quotes
+    json_str = match.group()
+    json_str = json_str.replace('\u201c', '\\"').replace('\u201d', '\\"')
+    json_str = json_str.replace('\u2018', "\\'").replace('\u2019', "\\'")
+
     try:
-        selected = json.loads(match.group())
+        selected = json.loads(json_str)
         return selected[:TOP_N]
     except json.JSONDecodeError as e:
         print(f"JSON parse error: {e}\nRaw: {raw}", file=sys.stderr)
