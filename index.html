@@ -438,10 +438,31 @@
             <button class="article-full-toggle" onclick="toggleFull(this)">
               原文 <span class="arrow">↓</span>
             </button>
-            <div class="article-full-body">${escHtml(a.full_text)}</div>
+            <div class="article-full-body">${escHtml(trimFullText(a.full_text, a.title))}</div>
           </div>` : ''}
         </article>
       `).join('');
+    }
+
+    function trimFullText(text, title) {
+      // If the text starts with the article title (common scraping artifact),
+      // find where the actual body begins — after the title + metadata lines.
+      if (!text) return '';
+      const titleWords = title.split(/\s+/).slice(0, 6).join(' ').toLowerCase();
+      const idx = text.toLowerCase().indexOf(titleWords);
+      if (idx !== -1 && idx < 400) {
+        // Skip past the title occurrence and any short metadata lines after it
+        let start = idx + titleWords.length;
+        // Skip remaining title text until we hit a longer content sentence
+        const rest = text.slice(start);
+        // Find first position where a sentence of >80 chars starts
+        const match = rest.match(/[A-Z\u4e00-\u9fa5][^.!?]{80,}/);
+        if (match) {
+          start += match.index;
+          return text.slice(start).trim();
+        }
+      }
+      return text;
     }
 
     function toggleFull(btn) {

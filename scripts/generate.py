@@ -160,9 +160,10 @@ def get_summary(entry):
 
 
 def extract_article_text(html):
-    """Extract main article body from HTML, ignoring nav/sidebar/footer."""
-    # Remove script, style, nav, header, footer, aside, sidebar blocks
-    for tag in ("script", "style", "nav", "header", "footer", "aside"):
+    """Extract main article body from HTML, ignoring nav/sidebar/footer/metadata."""
+    # Remove non-content blocks entirely
+    for tag in ("script", "style", "nav", "header", "footer", "aside",
+                "figure", "figcaption"):
         html = re.sub(
             rf"<{tag}[^>]*>.*?</{tag}>", " ", html,
             flags=re.DOTALL | re.IGNORECASE
@@ -172,22 +173,27 @@ def extract_article_text(html):
     candidates = [
         r'<article[^>]*>(.*?)</article>',
         r'<main[^>]*>(.*?)</main>',
-        r'<div[^>]+class="[^"]*\b(?:post|entry|article|content|body|post-content|entry-content|article-body|post-body)\b[^"]*"[^>]*>(.*?)</div>',
+        r'<div[^>]+class="[^"]*\b(?:post-content|entry-content|article-body|article-content|post-body|post-text)\b[^"]*"[^>]*>(.*?)</div>',
+        r'<div[^>]+class="[^"]*\b(?:post|entry|article|content|body)\b[^"]*"[^>]*>(.*?)</div>',
         r'<div[^>]+id="[^"]*\b(?:post|entry|article|content|main)\b[^"]*"[^>]*>(.*?)</div>',
     ]
 
+    best = ""
     for pattern in candidates:
         match = re.search(pattern, html, re.DOTALL | re.IGNORECASE)
         if match:
             block = match.group(1) if match.lastindex else match.group(0)
             text = re.sub(r"<[^>]+>", " ", block)
             text = re.sub(r"\s+", " ", text).strip()
-            if len(text) > 200:  # ignore tiny matches
-                return text
+            if len(text) > len(best):
+                best = text
 
-    # Fallback: strip all tags from full page
-    text = re.sub(r"<[^>]+>", " ", html)
-    return re.sub(r"\s+", " ", text).strip()
+    if not best:
+        # Fallback: strip all tags from full page
+        best = re.sub(r"<[^>]+>", " ", html)
+        best = re.sub(r"\s+", " ", best).strip()
+
+    return best
 
 
 def fetch_full_text(url):
