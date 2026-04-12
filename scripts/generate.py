@@ -149,14 +149,23 @@ def parse_date(entry):
 
 
 def get_summary(entry):
+    import html as html_module
     text = getattr(entry, "summary", "") or ""
     if not text:
         content = getattr(entry, "content", [])
         if content:
             text = content[0].get("value", "")
     text = re.sub(r"<[^>]+>", " ", text)
+    text = html_module.unescape(text)
     text = re.sub(r"\s+", " ", text).strip()
-    return text[:500]
+    if len(text) <= 500:
+        return text
+    # Truncate at last sentence boundary within 500 chars
+    chunk = text[:500]
+    last = max(chunk.rfind(". "), chunk.rfind("! "), chunk.rfind("? "))
+    if last > 100:
+        return chunk[:last + 1]
+    return chunk
 
 
 def extract_article_text(html):
