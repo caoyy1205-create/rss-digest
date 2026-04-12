@@ -5,249 +5,312 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Daily RSS Digest</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      /* Morandi palette — muted, dusty, desaturated */
-      --dust-lavender:  #9E97C0;   /* muted lavender — primary accent */
-      --pale-lavender:  #E8E5F0;   /* very light lavender tint */
-      --warm-white:     #F2F0EA;   /* warm off-white background */
-      --parchment:      #ECEAE2;   /* card background */
-      --stone:          #C8C3B8;   /* border / divider */
-      --sage:           #A3AE9A;   /* secondary accent */
-      --ink:            #26231E;   /* primary text */
-      --ink-mid:        #504B45;   /* secondary text */
-      --ink-light:      #7A7570;   /* muted text */
-      --shadow-soft:    0 1px 4px rgba(58,55,48,0.06), 0 4px 16px rgba(58,55,48,0.05);
-      --shadow-lift:    0 2px 8px rgba(58,55,48,0.08), 0 8px 28px rgba(58,55,48,0.08);
-      --radius:         4px;
+      /* Vintage paper palette */
+      --paper:          #F4F0E6;
+      --paper-dark:     #EDE8D8;
+      --paper-shadow:   #E0D9C8;
+      --ink:            #2C2416;
+      --ink-mid:        #4A4235;
+      --ink-light:      #7A7060;
+      --ink-faint:      #A09880;
+      /* Accent — muted burgundy */
+      --accent:         #7A3B3B;
+      --accent-light:   #C4A882;
+      /* Borders */
+      --rule:           #C8BFA8;
+      --rule-dark:      #9A9080;
     }
 
-    html { scroll-behavior: smooth; }
+    /* ── PAPER TEXTURE via SVG noise ── */
+    html {
+      background-color: var(--paper);
+      scroll-behavior: smooth;
+    }
 
     body {
-      font-family: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB",
-                   "Microsoft YaHei", sans-serif;
-      background: var(--warm-white);
+      font-family: 'Crimson Text', 'Noto Serif SC', 'Source Han Serif SC',
+                   'STSong', 'SimSun', Georgia, serif;
+      background-color: var(--paper);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
       color: var(--ink);
-      line-height: 1.65;
+      line-height: 1.75;
       min-height: 100vh;
     }
 
-    /* ── HEADER ── */
-    header {
-      background: var(--warm-white);
-      border-bottom: 1px solid var(--stone);
-      padding: 0 2rem;
-      position: sticky;
-      top: 0;
-      z-index: 50;
+    /* ── MASTHEAD ── */
+    .masthead {
+      border-bottom: 3px double var(--rule-dark);
+      padding: 1.5rem 2rem 1rem;
+      text-align: center;
+      position: relative;
     }
 
-    .header-inner {
-      max-width: 720px;
+    .masthead-inner {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .masthead-ornament {
+      font-size: 0.75rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 0.4rem;
+      font-family: 'Crimson Text', serif;
+    }
+
+    .masthead h1 {
+      font-family: 'Playfair Display', 'STSong', 'SimSun', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+
+    .masthead-sub {
+      font-family: 'Crimson Text', serif;
+      font-size: 0.9rem;
+      font-style: italic;
+      color: var(--ink-light);
+      margin-top: 0.3rem;
+      letter-spacing: 0.05em;
+    }
+
+    .masthead-rule {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.9rem;
+      color: var(--rule-dark);
+    }
+
+    .masthead-rule::before,
+    .masthead-rule::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--rule-dark);
+    }
+
+    .masthead-rule span {
+      font-size: 0.8rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── NAV BAR (date + meta) ── */
+    .topbar {
+      border-bottom: 1px solid var(--rule);
+      padding: 0.5rem 2rem;
+      background: var(--paper-dark);
+    }
+
+    .topbar-inner {
+      max-width: 780px;
       margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      height: 56px;
+      flex-wrap: wrap;
     }
 
-    .brand h1 {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 1.05rem;
-      font-weight: 500;
-      letter-spacing: 0.01em;
-      color: var(--ink);
-    }
-
-    .brand .tagline {
-      font-size: 0.72rem;
-      color: var(--ink-light);
-      margin-top: 1px;
-      letter-spacing: 0.03em;
-    }
-
-    /* Date selector */
-    .date-wrap {
+    .topbar-left {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.6rem;
     }
 
-    .date-wrap label {
-      font-size: 0.72rem;
+    .topbar-left label {
+      font-family: 'Crimson Text', serif;
+      font-size: 0.85rem;
       color: var(--ink-light);
-      letter-spacing: 0.04em;
+      font-style: italic;
     }
 
     select#date-select {
-      font-family: inherit;
-      font-size: 0.8rem;
+      font-family: 'Crimson Text', serif;
+      font-size: 0.85rem;
       color: var(--ink);
-      background: var(--parchment);
-      border: 1px solid var(--stone);
-      border-radius: var(--radius);
-      padding: 0.3rem 0.65rem;
+      background: var(--paper);
+      border: 1px solid var(--rule-dark);
+      border-radius: 0;
+      padding: 0.2rem 1.4rem 0.2rem 0.5rem;
       cursor: pointer;
       outline: none;
-      transition: border-color 0.15s;
       appearance: none;
-      padding-right: 1.6rem;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239A9590'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%237A7060'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 0.55rem center;
+      background-position: right 0.4rem center;
     }
 
-    select#date-select:focus { border-color: var(--dust-lavender); }
+    select#date-select:focus { border-color: var(--accent); }
+
+    .topbar-right {
+      font-family: 'Crimson Text', serif;
+      font-size: 0.8rem;
+      color: var(--ink-faint);
+      font-style: italic;
+    }
 
     /* ── MAIN ── */
     main {
-      max-width: 720px;
+      max-width: 780px;
       margin: 0 auto;
       padding: 2.5rem 2rem 5rem;
     }
 
-    /* Meta bar */
-    .meta-bar {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
+    /* Date heading */
+    .date-heading {
+      text-align: center;
       margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--stone);
-      flex-wrap: wrap;
-      gap: 0.4rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 3px double var(--rule-dark);
     }
 
-    .date-label {
-      font-family: 'Lora', Georgia, serif;
+    .date-heading .date-label {
+      font-family: 'Playfair Display', serif;
       font-size: 1.5rem;
       font-weight: 400;
+      font-style: italic;
       color: var(--ink);
-      letter-spacing: -0.01em;
     }
 
-    .count-badge {
-      font-size: 0.72rem;
-      color: var(--ink-light);
-      letter-spacing: 0.04em;
+    .date-heading .count-badge {
+      display: block;
+      font-family: 'Crimson Text', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-top: 0.25rem;
     }
 
-    /* ── ARTICLES ── */
+    /* ── ARTICLE LIST ── */
     .articles {
       display: flex;
       flex-direction: column;
     }
 
-    /* Each article is a section separated by a soft rule */
     .article-item {
-      padding: 2rem 0;
-      border-bottom: 1px solid var(--stone);
+      padding: 2.2rem 0;
+      border-bottom: 1px solid var(--rule);
+      position: relative;
     }
 
-    .article-item:first-child { padding-top: 0; }
-    .article-item:last-child  { border-bottom: none; }
+    .article-item:last-child { border-bottom: none; }
 
-    /* Article top row: number + meta */
-    .article-top {
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      margin-bottom: 0.75rem;
-    }
-
+    /* Decorative number */
     .article-num {
-      font-size: 0.7rem;
-      color: var(--dust-lavender);
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      padding-top: 0.35rem;
-      flex-shrink: 0;
-      width: 1.4rem;
-      text-align: right;
+      font-family: 'Playfair Display', serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--accent-light);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
     }
 
-    .article-meta { flex: 1; }
-
+    /* Title */
     .article-title {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 1.1rem;
+      font-family: 'Playfair Display', 'STSong', serif;
+      font-size: 1.35rem;
       font-weight: 500;
-      line-height: 1.45;
+      line-height: 1.35;
       color: var(--ink);
       text-decoration: none;
       display: block;
-      transition: color 0.15s;
+      margin-bottom: 0.4rem;
     }
 
-    .article-title:hover { color: var(--dust-lavender); }
+    .article-title:hover {
+      color: var(--accent);
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 3px;
+    }
 
+    /* Byline */
     .article-byline {
-      margin-top: 0.3rem;
-      font-size: 0.72rem;
-      color: var(--ink-light);
+      font-family: 'Crimson Text', serif;
+      font-size: 0.82rem;
+      color: var(--ink-faint);
+      font-style: italic;
+      margin-bottom: 1rem;
       letter-spacing: 0.03em;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
     }
 
     .article-byline .source {
-      color: var(--sage);
-      font-weight: 500;
+      color: var(--accent);
+      font-style: normal;
+      font-weight: 600;
     }
 
-    .article-byline .sep {
-      color: var(--stone);
-    }
-
-    /* Reason — the AI's one-liner */
+    /* Reason — pull quote style */
     .article-reason {
-      margin: 0.9rem 0 0 2.4rem;
-      font-size: 0.82rem;
-      color: var(--dust-lavender);
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
       font-style: italic;
+      color: var(--ink-mid);
       line-height: 1.55;
-      padding-left: 0.75rem;
-      border-left: 2px solid var(--pale-lavender);
+      margin-bottom: 1rem;
+      padding: 0.5rem 1.25rem;
+      border-left: 3px solid var(--accent-light);
+      border-right: 3px solid var(--accent-light);
+      text-align: center;
     }
 
-    /* Chinese summary */
+    /* Summary with drop cap */
     .article-summary {
-      margin: 0.9rem 0 0 2.4rem;
-      font-size: 0.875rem;
+      font-family: 'Crimson Text', serif;
+      font-size: 1rem;
       color: var(--ink-mid);
       line-height: 1.8;
+      text-align: justify;
+      hyphens: auto;
+      -webkit-hyphens: auto;
     }
 
-    /* Full article text */
+    .article-summary::first-letter {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.2em;
+      font-weight: 700;
+      float: left;
+      line-height: 0.75;
+      margin: 0.08em 0.1em 0 0;
+      color: var(--ink);
+    }
+
+    /* ── FULL TEXT TOGGLE ── */
     .article-full {
-      margin: 1.25rem 0 0 2.4rem;
+      margin-top: 1.25rem;
     }
 
     .article-full-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-size: 0.72rem;
+      font-family: 'Crimson Text', serif;
+      font-size: 0.82rem;
+      font-style: italic;
       color: var(--ink-light);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       cursor: pointer;
       background: none;
-      border: 1px solid var(--stone);
-      border-radius: var(--radius);
-      padding: 0.25rem 0.65rem;
-      transition: border-color 0.15s, color 0.15s;
-      font-family: inherit;
+      border: 0.5px solid var(--rule-dark);
+      border-radius: 0;
+      padding: 0.25rem 0.8rem;
+      transition: color 0.15s, border-color 0.15s;
+      box-shadow: 1px 1px 0 var(--rule-dark);
     }
 
     .article-full-toggle:hover {
-      border-color: var(--dust-lavender);
-      color: var(--dust-lavender);
+      color: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 1px 1px 0 var(--accent);
     }
 
     .article-full-toggle .arrow {
@@ -260,42 +323,51 @@
 
     .article-full-body {
       display: none;
-      margin-top: 1rem;
-      font-size: 0.85rem;
+      margin-top: 1.2rem;
+      font-family: 'Crimson Text', serif;
+      font-size: 0.95rem;
       color: var(--ink-mid);
       line-height: 1.85;
-      background: var(--parchment);
-      border: 1px solid var(--stone);
-      border-radius: var(--radius);
-      padding: 1.25rem 1.5rem;
+      text-align: justify;
+      hyphens: auto;
+      background: var(--paper-dark);
+      border: 1px solid var(--rule);
+      border-top: 3px double var(--rule-dark);
+      padding: 1.5rem 1.75rem;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
     .article-full-body.open { display: block; }
 
-    /* ── LOADING / EMPTY STATES ── */
+    /* ── ORNAMENTAL DIVIDER ── */
+    .ornament-divider {
+      text-align: center;
+      color: var(--ink-faint);
+      font-size: 1rem;
+      letter-spacing: 0.5em;
+      margin: 0.5rem 0;
+      user-select: none;
+    }
+
+    /* ── LOADING / EMPTY ── */
     .state-box {
       text-align: center;
       padding: 5rem 2rem;
-      color: var(--ink-light);
+      color: var(--ink-faint);
+      font-family: 'Crimson Text', serif;
+      font-style: italic;
     }
 
-    .state-box .icon {
-      font-size: 2rem;
-      margin-bottom: 0.75rem;
-      opacity: 0.5;
-    }
-
-    .state-box p { font-size: 0.875rem; }
+    .state-box p { font-size: 1rem; }
 
     .spinner {
-      width: 24px;
-      height: 24px;
-      border: 2px solid var(--stone);
-      border-top-color: var(--dust-lavender);
+      width: 22px;
+      height: 22px;
+      border: 1.5px solid var(--rule);
+      border-top-color: var(--accent-light);
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin 0.9s linear infinite;
       margin: 0 auto 0.75rem;
     }
 
@@ -303,12 +375,14 @@
 
     /* ── FOOTER ── */
     footer {
-      border-top: 1px solid var(--stone);
+      border-top: 3px double var(--rule-dark);
       padding: 1.5rem 2rem;
+      text-align: center;
+      background: var(--paper-dark);
     }
 
     .footer-inner {
-      max-width: 720px;
+      max-width: 780px;
       margin: 0 auto;
       display: flex;
       align-items: center;
@@ -318,58 +392,64 @@
     }
 
     footer p, footer span {
-      font-size: 0.72rem;
-      color: var(--ink-light);
-      letter-spacing: 0.02em;
+      font-family: 'Crimson Text', serif;
+      font-size: 0.8rem;
+      color: var(--ink-faint);
+      font-style: italic;
     }
 
     footer a {
       color: var(--ink-light);
-      text-decoration: underline;
+      text-decoration: underline dotted;
       text-underline-offset: 2px;
     }
 
-    footer a:hover { color: var(--dust-lavender); }
+    footer a:hover { color: var(--accent); }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 600px) {
-      header { padding: 0 1.25rem; }
-      main { padding: 2rem 1.25rem 4rem; }
-      footer { padding: 1.25rem; }
-      .brand .tagline { display: none; }
-      .article-reason,
-      .article-summary,
-      .article-full { margin-left: 0; }
-      .article-num { display: none; }
+      .masthead, .topbar, main, footer { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .masthead h1 { font-size: 1.6rem; }
+      .article-title { font-size: 1.15rem; }
+      .article-summary::first-letter { font-size: 2.6em; }
+      .article-reason { padding: 0.4rem 0.75rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header>
-    <div class="header-inner">
-      <div class="brand">
-        <h1>Daily RSS Digest</h1>
-        <div class="tagline">AI 精选 · 每日 5 篇值得读的文章</div>
-      </div>
-      <div class="date-wrap">
-        <label for="date-select">日期</label>
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="masthead-inner">
+      <div class="masthead-ornament">Est. 2026 &nbsp;·&nbsp; Vol. I</div>
+      <h1>Daily RSS Digest</h1>
+      <div class="masthead-sub">AI 精选 &middot; 每日五篇值得读的文章</div>
+      <div class="masthead-rule"><span>❧</span></div>
+    </div>
+  </div>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-left">
+        <label for="date-select">Edition of</label>
         <select id="date-select" aria-label="选择日期"></select>
       </div>
+      <span class="topbar-right" id="last-updated"></span>
     </div>
-  </header>
+  </div>
 
   <!-- MAIN -->
   <main>
-    <div class="meta-bar">
-      <span class="date-label" id="display-date"></span>
+    <div class="date-heading">
+      <div class="date-label" id="display-date"></div>
       <span class="count-badge" id="count-badge"></span>
     </div>
+
     <div class="articles" id="articles-container">
       <div class="state-box">
         <div class="spinner"></div>
-        <p>正在加载今日精选…</p>
+        <p>Gathering today's readings&hellip;</p>
       </div>
     </div>
   </main>
@@ -377,21 +457,24 @@
   <!-- FOOTER -->
   <footer>
     <div class="footer-inner">
-      <p>来源：<a href="https://gist.github.com/emschwartz/e6d2bf860ccc367fe37ff953ba6de66b" target="_blank">HN Popular Blogs 2025</a> · 92 个订阅源 · Qwen 每日筛选</p>
-      <span id="last-updated"></span>
+      <p>Sources: <a href="https://gist.github.com/emschwartz/e6d2bf860ccc367fe37ff953ba6de66b" target="_blank">HN Popular Blogs 2025</a> &mdash; 92 feeds, scored daily by relevance</p>
+      <span id="footer-updated"></span>
     </div>
   </footer>
 
   <script>
-    const dateSelect       = document.getElementById('date-select');
+    const dateSelect        = document.getElementById('date-select');
     const articlesContainer = document.getElementById('articles-container');
-    const displayDate      = document.getElementById('display-date');
-    const countBadge       = document.getElementById('count-badge');
-    const lastUpdated      = document.getElementById('last-updated');
+    const displayDate       = document.getElementById('display-date');
+    const countBadge        = document.getElementById('count-badge');
+    const lastUpdated       = document.getElementById('last-updated');
+    const footerUpdated     = document.getElementById('footer-updated');
 
     function formatDate(str) {
       const [y, m, d] = str.split('-');
-      return `${y}年${parseInt(m)}月${parseInt(d)}日`;
+      const months = ['January','February','March','April','May','June',
+                      'July','August','September','October','November','December'];
+      return `${months[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
     }
 
     function escHtml(str) {
@@ -402,60 +485,13 @@
         .replace(/"/g, '&quot;');
     }
 
-    function renderArticles(data) {
-      displayDate.textContent  = formatDate(data.date);
-      lastUpdated.textContent  = `更新于 ${data.generated_at}`;
-
-      if (!data.articles || data.articles.length === 0) {
-        countBadge.textContent = '';
-        articlesContainer.innerHTML = `
-          <div class="state-box">
-            <div class="icon">○</div>
-            <p>${escHtml(data.note || '今日暂无符合条件的新文章，请明天再来。')}</p>
-          </div>`;
-        return;
-      }
-
-      countBadge.textContent = `${data.articles.length} 篇`;
-
-      articlesContainer.innerHTML = data.articles.map((a, i) => `
-        <article class="article-item">
-          <div class="article-top">
-            <span class="article-num">0${i + 1}</span>
-            <div class="article-meta">
-              <a class="article-title" href="${escHtml(a.url)}" target="_blank" rel="noopener">
-                ${escHtml(a.title)}
-              </a>
-              <div class="article-byline">
-                <span class="source">${escHtml(a.source)}</span>
-              </div>
-            </div>
-          </div>
-          <p class="article-reason">${escHtml(a.reason)}</p>
-          <p class="article-summary">${escHtml(a.summary)}</p>
-          ${a.full_text ? `
-          <div class="article-full">
-            <button class="article-full-toggle" onclick="toggleFull(this)">
-              原文 <span class="arrow">↓</span>
-            </button>
-            <div class="article-full-body">${escHtml(trimFullText(a.full_text, a.title))}</div>
-          </div>` : ''}
-        </article>
-      `).join('');
-    }
-
     function trimFullText(text, title) {
-      // If the text starts with the article title (common scraping artifact),
-      // find where the actual body begins — after the title + metadata lines.
       if (!text) return '';
       const titleWords = title.split(/\s+/).slice(0, 6).join(' ').toLowerCase();
       const idx = text.toLowerCase().indexOf(titleWords);
       if (idx !== -1 && idx < 400) {
-        // Skip past the title occurrence and any short metadata lines after it
         let start = idx + titleWords.length;
-        // Skip remaining title text until we hit a longer content sentence
         const rest = text.slice(start);
-        // Find first position where a sentence of >80 chars starts
         const match = rest.match(/[A-Z\u4e00-\u9fa5][^.!?]{80,}/);
         if (match) {
           start += match.index;
@@ -465,34 +501,74 @@
       return text;
     }
 
-    function toggleFull(btn) {
-      btn.classList.toggle('open');
-      btn.nextElementSibling.classList.toggle('open');
-      const isOpen = btn.classList.contains('open');
-      btn.querySelector('.arrow').textContent = isOpen ? '↑' : '↓';
+    function renderArticles(data) {
+      displayDate.textContent = formatDate(data.date);
+      const ts = `Updated ${data.generated_at}`;
+      lastUpdated.textContent = ts;
+      footerUpdated.textContent = ts;
+
+      if (!data.articles || data.articles.length === 0) {
+        countBadge.textContent = '';
+        articlesContainer.innerHTML = `
+          <div class="state-box">
+            <p>${escHtml(data.note || 'No articles found for this date.')}</p>
+          </div>`;
+        return;
+      }
+
+      countBadge.textContent = `${data.articles.length} articles selected`;
+
+      const numerals = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
+
+      articlesContainer.innerHTML = data.articles.map((a, i) => `
+        <article class="article-item">
+          <div class="article-num">&mdash; ${numerals[i] || i+1} &mdash;</div>
+          <a class="article-title" href="${escHtml(a.url)}" target="_blank" rel="noopener">
+            ${escHtml(a.title)}
+          </a>
+          <div class="article-byline">
+            <span class="source">${escHtml(a.source)}</span>
+            ${a.published ? ` &nbsp;&middot;&nbsp; ${escHtml(a.published)}` : ''}
+          </div>
+          <blockquote class="article-reason">${escHtml(a.reason)}</blockquote>
+          <p class="article-summary">${escHtml(a.summary)}</p>
+          ${a.full_text ? `
+          <div class="article-full">
+            <button class="article-full-toggle" onclick="toggleFull(this)">
+              Read full article &nbsp;<span class="arrow">↓</span>
+            </button>
+            <div class="article-full-body">${escHtml(trimFullText(a.full_text, a.title))}</div>
+          </div>` : ''}
+        </article>
+        ${i < data.articles.length - 1 ? '<div class="ornament-divider">· · ·</div>' : ''}
+      `).join('');
     }
 
     function showError(msg) {
       articlesContainer.innerHTML = `
-        <div class="state-box">
-          <div class="icon">○</div>
-          <p>${escHtml(msg)}</p>
-        </div>`;
+        <div class="state-box"><p>${escHtml(msg)}</p></div>`;
       countBadge.textContent = '';
+    }
+
+    function toggleFull(btn) {
+      btn.classList.toggle('open');
+      btn.nextElementSibling.classList.toggle('open');
+      btn.querySelector('.arrow').textContent =
+        btn.classList.contains('open') ? '↑' : '↓';
     }
 
     async function loadDate(dateStr) {
       articlesContainer.innerHTML = `
         <div class="state-box">
           <div class="spinner"></div>
-          <p>正在加载…</p>
+          <p>Gathering today's readings&hellip;</p>
         </div>`;
       try {
         const res = await fetch(`data/${dateStr}.json?t=${Date.now()}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         renderArticles(await res.json());
       } catch (e) {
-        showError(`加载失败：${e.message}`);
+        showError(`Failed to load: ${e.message}`);
       }
     }
 
@@ -501,8 +577,7 @@
         const res = await fetch(`data/index.json?t=${Date.now()}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const { dates = [] } = await res.json();
-
-        if (!dates.length) { showError('暂无数据，请等待每日更新。'); return; }
+        if (!dates.length) { showError('No data yet. Check back tomorrow.'); return; }
 
         dates.forEach(d => {
           const opt = document.createElement('option');
@@ -514,7 +589,7 @@
         dateSelect.value = dates[0];
         await loadDate(dates[0]);
       } catch (e) {
-        showError(`初始化失败：${e.message}`);
+        showError(`Initialization failed: ${e.message}`);
       }
     }
 
