@@ -193,7 +193,19 @@ def extract_article_text(html):
         best = re.sub(r"<[^>]+>", " ", html)
         best = re.sub(r"\s+", " ", best).strip()
 
-    return best
+    return clean_text(best)
+
+
+def clean_text(text):
+    """Decode HTML entities and restore paragraph breaks."""
+    import html as html_module
+    # Decode HTML entities (&#8220; → " etc.)
+    text = html_module.unescape(text)
+    # Collapse runs of whitespace back to single spaces
+    text = re.sub(r" {2,}", " ", text)
+    # Restore paragraph breaks: sentence-ending punctuation followed by space + capital
+    text = re.sub(r'([.!?]) ([A-Z\u4e00-\u9fa5])', r'\1\n\n\2', text)
+    return text.strip()
 
 
 def fetch_full_text(url):

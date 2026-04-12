@@ -334,8 +334,15 @@
       border: 1px solid var(--rule);
       border-top: 3px double var(--rule-dark);
       padding: 1.5rem 1.75rem;
-      white-space: pre-wrap;
       word-break: break-word;
+    }
+
+    .article-full-body p {
+      margin-bottom: 1em;
+    }
+
+    .article-full-body p:last-child {
+      margin-bottom: 0;
     }
 
     .article-full-body.open { display: block; }
@@ -485,6 +492,15 @@
         .replace(/"/g, '&quot;');
     }
 
+    function toParagraphs(text) {
+      if (!text) return '';
+      return text.split(/\n\n+/)
+        .map(p => p.trim())
+        .filter(p => p.length > 0)
+        .map(p => `<p>${escHtml(p)}</p>`)
+        .join('');
+    }
+
     function trimFullText(text, title) {
       if (!text) return '';
       const titleWords = title.split(/\s+/).slice(0, 6).join(' ').toLowerCase();
@@ -537,7 +553,7 @@
             <button class="article-full-toggle" onclick="toggleFull(this)">
               Read full article &nbsp;<span class="arrow">↓</span>
             </button>
-            <div class="article-full-body">${escHtml(trimFullText(a.full_text, a.title))}</div>
+            <div class="article-full-body">${toParagraphs(trimFullText(a.full_text, a.title))}</div>
           </div>` : ''}
         </article>
         ${i < data.articles.length - 1 ? '<div class="ornament-divider">· · ·</div>' : ''}
