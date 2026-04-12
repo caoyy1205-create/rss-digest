@@ -25,7 +25,7 @@ DATA_DIR = ROOT / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
 TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-LOOKBACK_HOURS = 72   # 3 days to handle weekends / slow feeds
+LOOKBACK_HOURS = 120  # 5 days
 FETCH_TIMEOUT = 10    # seconds per feed
 TOP_N = 5
 
@@ -37,61 +37,57 @@ TOP_N = 5
 
 TOPICS = [
     {
-        "name": "AI agent",
-        "weight": 3,
+        "name": "AI product & news",
+        "weight": 4,
         "keywords": [
-            "agent", "agentic", "autonomous", "tool use", "tool-use",
-            "multi-agent", "orchestration", "workflow automation",
+            "ai product", "ai feature", "ai launch", "ai release", "ai update",
+            "chatgpt", "claude", "gemini", "gpt-4", "gpt-5", "copilot",
+            "openai", "anthropic", "google deepmind", "mistral", "meta ai",
+            "ai assistant", "ai tool", "ai app", "ai startup", "ai company",
+            "ai funding", "ai acquisition", "ai model release",
         ],
     },
     {
-        "name": "LLM engineering",
+        "name": "AI agent & application",
         "weight": 3,
         "keywords": [
-            "llm", "large language model", "prompt", "rag", "retrieval",
-            "fine-tun", "finetun", "eval", "embedding", "context window",
-            "chain-of-thought", "reasoning model", "inference",
-        ],
-    },
-    {
-        "name": "AI / ML general",
-        "weight": 2,
-        "keywords": [
-            "gpt", "claude", "gemini", "mistral", "openai", "anthropic",
-            "machine learning", "deep learning", "neural", "transformer",
-            "diffusion", "multimodal", "foundation model",
+            "ai agent", "agentic", "autonomous ai", "ai workflow",
+            "multi-agent", "ai automation", "ai in practice", "ai use case",
+            "vibe coding", "cursor", "devin", "ai coding",
         ],
     },
     {
         "name": "Product & UX",
-        "weight": 2,
+        "weight": 3,
         "keywords": [
-            "product", "ux", "user experience", "design", "interface",
-            "onboarding", "retention", "metrics", "a/b test", "roadmap",
+            "product", "user experience", "ux", "design", "interface",
+            "onboarding", "retention", "growth", "product-market fit",
+            "feature", "roadmap", "launch",
         ],
     },
     {
         "name": "Startup & business",
-        "weight": 2,
+        "weight": 3,
         "keywords": [
-            "startup", "founder", "venture", "saas", "revenue", "growth",
+            "startup", "founder", "venture", "saas", "revenue",
             "business model", "monetiz", "fundrais", "bootstrap",
+            "series a", "series b", "valuation", "exit",
         ],
     },
     {
         "name": "Cognitive & learning",
-        "weight": 1,
+        "weight": 2,
         "keywords": [
-            "cognitive", "mental model", "learning", "memory", "psychology",
-            "decision", "bias", "thinking", "interdisciplin",
+            "cognitive", "mental model", "learning", "psychology",
+            "decision", "thinking", "interdisciplin", "creativity",
         ],
     },
     {
-        "name": "Engineering quality",
+        "name": "LLM engineering",
         "weight": 1,
         "keywords": [
-            "software engineering", "architecture", "refactor", "testing",
-            "observability", "reliability", "scalab", "distributed",
+            "prompt engineering", "rag", "fine-tun", "eval", "embedding",
+            "context window", "reasoning model",
         ],
     },
 ]
@@ -100,6 +96,10 @@ TOPICS = [
 PENALTY_KEYWORDS = [
     "recipe", "cooking", "sports", "celebrity", "fashion",
     "horoscope", "lottery", "weather forecast",
+    "security vulnerability", "cve", "exploit", "malware", "ransomware",
+    "sql injection", "buffer overflow", "penetration test",
+    "kernel", "syscall", "assembly", "linker", "compiler internals",
+    "network protocol", "tcp/ip", "ethernet", "openwrt",
 ]
 
 

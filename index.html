@@ -166,31 +166,6 @@
       padding: 2.5rem 2rem 5rem;
     }
 
-    /* Date heading */
-    .date-heading {
-      text-align: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1.2rem;
-      border-bottom: 3px double var(--rule-dark);
-    }
-
-    .date-heading .date-label {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.5rem;
-      font-weight: 400;
-      font-style: italic;
-      color: var(--ink);
-    }
-
-    .date-heading .count-badge {
-      display: block;
-      font-family: 'Crimson Text', serif;
-      font-size: 0.78rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--ink-faint);
-      margin-top: 0.25rem;
-    }
 
     /* ── ARTICLE LIST ── */
     .articles {
@@ -448,11 +423,6 @@
 
   <!-- MAIN -->
   <main>
-    <div class="date-heading">
-      <div class="date-label" id="display-date"></div>
-      <span class="count-badge" id="count-badge"></span>
-    </div>
-
     <div class="articles" id="articles-container">
       <div class="state-box">
         <div class="spinner"></div>
@@ -472,8 +442,6 @@
   <script>
     const dateSelect        = document.getElementById('date-select');
     const articlesContainer = document.getElementById('articles-container');
-    const displayDate       = document.getElementById('display-date');
-    const countBadge        = document.getElementById('count-badge');
     const lastUpdated       = document.getElementById('last-updated');
     const footerUpdated     = document.getElementById('footer-updated');
 
@@ -518,21 +486,17 @@
     }
 
     function renderArticles(data) {
-      displayDate.textContent = formatDate(data.date);
       const ts = `Updated ${data.generated_at}`;
       lastUpdated.textContent = ts;
       footerUpdated.textContent = ts;
 
       if (!data.articles || data.articles.length === 0) {
-        countBadge.textContent = '';
         articlesContainer.innerHTML = `
           <div class="state-box">
             <p>${escHtml(data.note || 'No articles found for this date.')}</p>
           </div>`;
         return;
       }
-
-      countBadge.textContent = `${data.articles.length} articles selected`;
 
       const numerals = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
 
