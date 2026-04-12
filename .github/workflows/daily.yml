@@ -24,8 +24,6 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run generate script
-        env:
-          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
         run: python scripts/generate.py
 
       - name: Commit and push if data changed

@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 """
 Daily RSS Digest generator.
-Fetches RSS feeds, filters with Qwen LLM, writes JSON to data/.
+Fetches RSS feeds, scores articles by keyword relevance, writes JSON to data/.
+No LLM required.
 """
 
 import json
-import os
 import re
-import socket
 import sys
-import time
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import feedparser
 import requests
 from dateutil import parser as dateparser
-from openai import OpenAI
 
 # ---------------------------------------------------------------------------
 # Config
@@ -28,24 +25,98 @@ DATA_DIR = ROOT / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
 TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-LOOKBACK_HOURS = 72  # 3 days to handle weekends / slow feeds
-FETCH_TIMEOUT = 10  # seconds per feed
+LOOKBACK_HOURS = 72   # 3 days to handle weekends / slow feeds
+FETCH_TIMEOUT = 10    # seconds per feed
 TOP_N = 5
 
-INTERESTS = """
-- AI agent 落地与应用（实际产品、工程实践、案例）
-- 产品方法论与用户体验设计
-- LLM 工程化（prompt engineering、RAG、eval、fine-tuning）
-- 创业、商业模式与增长策略
-- 跨学科思维、认知科学、心理学与学习方法
-""".strip()
+# ---------------------------------------------------------------------------
+# Interest keyword scoring
+# Each topic has a weight and a list of keywords (matched case-insensitively).
+# Score = sum of weights for each keyword found in title+snippet.
+# ---------------------------------------------------------------------------
 
-# Qwen via DashScope OpenAI-compatible endpoint
-client = OpenAI(
-    api_key=os.environ["DASHSCOPE_API_KEY"],
-    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-)
-MODEL = "qwen-plus-latest"
+TOPICS = [
+    {
+        "name": "AI agent",
+        "weight": 3,
+        "keywords": [
+            "agent", "agentic", "autonomous", "tool use", "tool-use",
+            "multi-agent", "orchestration", "workflow automation",
+        ],
+    },
+    {
+        "name": "LLM engineering",
+        "weight": 3,
+        "keywords": [
+            "llm", "large language model", "prompt", "rag", "retrieval",
+            "fine-tun", "finetun", "eval", "embedding", "context window",
+            "chain-of-thought", "reasoning model", "inference",
+        ],
+    },
+    {
+        "name": "AI / ML general",
+        "weight": 2,
+        "keywords": [
+            "gpt", "claude", "gemini", "mistral", "openai", "anthropic",
+            "machine learning", "deep learning", "neural", "transformer",
+            "diffusion", "multimodal", "foundation model",
+        ],
+    },
+    {
+        "name": "Product & UX",
+        "weight": 2,
+        "keywords": [
+            "product", "ux", "user experience", "design", "interface",
+            "onboarding", "retention", "metrics", "a/b test", "roadmap",
+        ],
+    },
+    {
+        "name": "Startup & business",
+        "weight": 2,
+        "keywords": [
+            "startup", "founder", "venture", "saas", "revenue", "growth",
+            "business model", "monetiz", "fundrais", "bootstrap",
+        ],
+    },
+    {
+        "name": "Cognitive & learning",
+        "weight": 1,
+        "keywords": [
+            "cognitive", "mental model", "learning", "memory", "psychology",
+            "decision", "bias", "thinking", "interdisciplin",
+        ],
+    },
+    {
+        "name": "Engineering quality",
+        "weight": 1,
+        "keywords": [
+            "software engineering", "architecture", "refactor", "testing",
+            "observability", "reliability", "scalab", "distributed",
+        ],
+    },
+]
+
+# Penalty keywords — lower score for off-topic content
+PENALTY_KEYWORDS = [
+    "recipe", "cooking", "sports", "celebrity", "fashion",
+    "horoscope", "lottery", "weather forecast",
+]
+
+
+def score_article(title: str, snippet: str) -> float:
+    text = (title + " " + snippet).lower()
+    score = 0.0
+    for topic in TOPICS:
+        for kw in topic["keywords"]:
+            if kw.lower() in text:
+                score += topic["weight"]
+                break  # count each topic at most once
+    for kw in PENALTY_KEYWORDS:
+        if kw in text:
+            score -= 2
+    # Slight recency bonus is already handled by the cutoff filter
+    return score
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -57,7 +128,6 @@ def load_feeds():
 
 
 def parse_date(entry):
-    """Return a timezone-aware datetime from a feedparser entry, or None."""
     for attr in ("published_parsed", "updated_parsed"):
         t = getattr(entry, attr, None)
         if t:
@@ -65,7 +135,6 @@ def parse_date(entry):
                 return datetime(*t[:6], tzinfo=timezone.utc)
             except Exception:
                 pass
-    # Fallback: try string fields
     for attr in ("published", "updated"):
         s = getattr(entry, attr, None)
         if s:
@@ -80,33 +149,25 @@ def parse_date(entry):
 
 
 def get_summary(entry):
-    """Extract a plain-text summary from an entry (max 300 chars)."""
-    # Prefer summary field
     text = getattr(entry, "summary", "") or ""
     if not text:
-        # Fall back to content
         content = getattr(entry, "content", [])
         if content:
             text = content[0].get("value", "")
-    # Strip HTML tags
     text = re.sub(r"<[^>]+>", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
-    return text[:300]
+    return text[:500]
 
 
 def fetch_full_text(url):
-    """Fetch a URL and return plain text of the article body (best-effort)."""
     try:
         resp = requests.get(url, timeout=FETCH_TIMEOUT,
                             headers={"User-Agent": "RSS-Digest-Bot/1.0"})
         resp.raise_for_status()
         html = resp.text
-        # Remove script/style blocks
-        html = re.sub(r"<(script|style)[^>]*>.*?</(script|style)>", " ", html,
-                      flags=re.DOTALL | re.IGNORECASE)
-        # Strip all tags
+        html = re.sub(r"<(script|style)[^>]*>.*?</(script|style)>", " ",
+                      html, flags=re.DOTALL | re.IGNORECASE)
         text = re.sub(r"<[^>]+>", " ", html)
-        # Collapse whitespace
         text = re.sub(r"\s+", " ", text).strip()
         return text
     except Exception as e:
@@ -115,17 +176,15 @@ def fetch_full_text(url):
 
 
 def get_source_name(feed, entry):
-    """Best-effort blog/source name."""
     feed_title = getattr(feed.feed, "title", "") or ""
     author = getattr(entry, "author", "") or ""
     return feed_title or author or "Unknown"
 
 
-def fetch_recent_articles(feeds, cutoff: datetime):
+def fetch_recent_articles(feeds, cutoff):
     articles = []
     for url in feeds:
         try:
-            # feedparser doesn't support timeout natively; use requests + parse
             resp = requests.get(url, timeout=FETCH_TIMEOUT,
                                 headers={"User-Agent": "RSS-Digest-Bot/1.0"})
             resp.raise_for_status()
@@ -142,12 +201,15 @@ def fetch_recent_articles(feeds, cutoff: datetime):
             link = getattr(entry, "link", "").strip()
             if not title or not link:
                 continue
+            snippet = get_summary(entry)
             articles.append({
                 "title": title,
                 "url": link,
                 "source": get_source_name(feed, entry),
                 "published": pub.strftime("%Y-%m-%d %H:%M UTC"),
-                "snippet": get_summary(entry),
+                "snippet": snippet,
+                "_score": score_article(title, snippet),
+                "_pub_dt": pub,
             })
 
     print(f"Fetched {len(articles)} articles from last {LOOKBACK_HOURS}h")
@@ -158,70 +220,32 @@ def select_top_articles(articles):
     if not articles:
         return []
 
-    # Build article list for prompt
-    lines = []
-    for i, a in enumerate(articles, 1):
-        lines.append(
-            f"[{i}] 标题: {a['title']}\n"
-            f"    来源: {a['source']}\n"
-            f"    链接: {a['url']}\n"
-            f"    摘要: {a['snippet']}\n"
-        )
-    article_text = "\n".join(lines)
+    # Sort by score desc, then by recency desc as tiebreaker
+    ranked = sorted(articles, key=lambda a: (a["_score"], a["_pub_dt"]), reverse=True)
 
-    prompt = f"""你是一位技术博客精选编辑。以下是今天从 RSS 订阅中抓取的文章列表。
+    # Log scores for visibility
+    print("Top scored articles:")
+    for a in ranked[:10]:
+        print(f"  [{a['_score']:.0f}] {a['title'][:80]}")
 
-我的兴趣方向：
-{INTERESTS}
+    top = ranked[:TOP_N]
 
-请从中挑选最值得读的 {TOP_N} 篇文章（优先匹配我的兴趣方向，其次考虑内容质量和独特性）。
+    # Build output — drop internal fields, add reason from matched topics
+    selected = []
+    for a in top:
+        text = (a["title"] + " " + a["snippet"]).lower()
+        matched = [t["name"] for t in TOPICS if any(kw in text for kw in t["keywords"])]
+        reason = "涵盖 " + "、".join(matched[:2]) if matched else "综合推荐"
+        selected.append({
+            "title": a["title"],
+            "url": a["url"],
+            "source": a["source"],
+            "published": a["published"],
+            "reason": reason,
+            "summary": a["snippet"],
+        })
 
-对每篇文章，用以下 JSON 格式输出（数组，共 {TOP_N} 个元素）：
-{{
-  "title": "文章标题（保持原文）",
-  "url": "原文链接",
-  "source": "博客/作者名",
-  "reason": "一句话中文推荐理由（20字以内，说明为什么值得读）",
-  "summary": "3-5句话中文摘要，概括文章核心观点"
-}}
-
-只输出 JSON 数组，不要有任何其他文字。
-
-文章列表：
-{article_text}
-"""
-
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.3,
-    )
-    raw = response.choices[0].message.content.strip()
-    print(f"Qwen raw response (first 500 chars):\n{raw[:500]}", file=sys.stderr)
-
-    # Extract JSON array from response (handle markdown code fences too)
-    json_str = raw
-    # Strip markdown code fences if present
-    json_str = re.sub(r"^```(?:json)?\s*", "", json_str, flags=re.MULTILINE)
-    json_str = re.sub(r"```\s*$", "", json_str, flags=re.MULTILINE)
-    json_str = json_str.strip()
-
-    match = re.search(r"\[.*\]", json_str, re.DOTALL)
-    if not match:
-        print(f"LLM response did not contain JSON array:\n{raw}", file=sys.stderr)
-        return []
-
-    # Replace Chinese/typographic curly quotes inside JSON strings with ASCII quotes
-    json_str = match.group()
-    json_str = json_str.replace('\u201c', '\\"').replace('\u201d', '\\"')
-    json_str = json_str.replace('\u2018', "\\'").replace('\u2019', "\\'")
-
-    try:
-        selected = json.loads(json_str)
-        return selected[:TOP_N]
-    except json.JSONDecodeError as e:
-        print(f"JSON parse error: {e}\nRaw: {raw}", file=sys.stderr)
-        return []
+    return selected
 
 
 def update_index(date_str):
@@ -230,11 +254,9 @@ def update_index(date_str):
         index = json.loads(index_path.read_text())
     else:
         index = {"dates": []}
-
     if date_str not in index["dates"]:
         index["dates"].insert(0, date_str)
         index["dates"].sort(reverse=True)
-
     index_path.write_text(json.dumps(index, ensure_ascii=False, indent=2))
     print(f"Updated index.json: {len(index['dates'])} dates")
 
@@ -255,7 +277,6 @@ def main():
     articles = fetch_recent_articles(feeds, cutoff)
 
     if articles:
-        print(f"Calling Qwen to select top {TOP_N}...")
         selected = select_top_articles(articles)
         print(f"Fetching full text for {len(selected)} selected articles...")
         for a in selected:
