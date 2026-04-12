@@ -1,44 +1,7 @@
 {
   "date": "2026-04-12",
-  "generated_at": "2026-04-12 02:00 UTC",
-  "total_fetched": 34,
-  "articles": [
-    {
-      "title": "Building Production-Ready AI Agents: Lessons from 12 Months of Deployment",
-      "url": "https://simonwillison.net/2026/Apr/12/ai-agents-production/",
-      "source": "Simon Willison's Weblog",
-      "reason": "深度总结 AI agent 生产部署的实战经验",
-      "summary": "作者回顾了过去一年在生产环境部署 AI agent 的经验教训。文章指出，最大的挑战不是模型能力，而是可靠性和可观测性——agent 失败时很难诊断原因。作者推荐在每个工具调用前后记录完整上下文，并为所有 agent 动作设置人工审核节点。文章还强调了限制 agent 权限范围的重要性，最小权限原则在 AI 系统中同样适用。最后作者分享了一套实用的 eval 框架，帮助团队在迭代 prompt 时保持质量稳定。",
-      "full_text": "Over the past twelve months, our team has deployed AI agents into production across three different product lines. The biggest lesson: reliability and observability matter far more than raw model capability. When an agent fails silently, diagnosing the root cause can take hours. We now log the full context before and after every tool call, and we have added human review checkpoints for all high-stakes agent actions. The principle of least privilege applies just as much to AI systems as it does to traditional software — agents should only have access to the tools and data they absolutely need. We also built a lightweight eval framework that runs on every prompt change, catching regressions before they reach users. The framework is simple: a set of golden examples with expected outputs, scored automatically using a judge model. It has saved us from shipping broken prompts at least a dozen times."
-    },
-    {
-      "title": "Why Your RAG Pipeline is Lying to You",
-      "url": "https://minimaxir.com/2026/04/rag-hallucination/",
-      "source": "Max Woolf's Blog",
-      "reason": "揭示 RAG 系统常见幻觉问题及解决方案",
-      "summary": "这篇文章深入分析了 RAG 系统中幻觉问题的根本原因。作者发现，问题往往不在于 LLM 本身，而在于检索阶段返回了语义相关但事实无关的文档片段。文章提出了三种缓解策略：改进 chunking 策略、引入 re-ranking 模型、以及在 prompt 中明确要求模型标注不确定性。作者还开源了一个简单的 eval 工具，可以自动检测 RAG 输出中的幻觉比例。对于正在构建 RAG 系统的工程师来说，这篇文章非常值得一读。"
-    },
-    {
-      "title": "The Founder's Paradox: When to Stop Building and Start Selling",
-      "url": "https://steveblank.com/2026/04/11/founders-paradox-selling/",
-      "source": "Steve Blank",
-      "reason": "创始人必读：何时从构建转向销售",
-      "summary": "Steve Blank 在这篇文章中探讨了早期创业者最常见的陷阱之一：过度沉迷于产品构建而忽视销售。他援引多个案例说明，许多技术创始人直到产品足够完善才愿意去卖，但这往往已经太晚。文章提出了一个简单的判断标准：如果你还没有 10 个付费用户，你的主要工作应该是销售而非开发。Blank 还分享了如何进行有效的客户发现对话，以及如何从对话中提炼出真正的产品需求。"
-    },
-    {
-      "title": "Cognitive Load Theory and Interface Design: What Designers Get Wrong",
-      "url": "https://www.geoffreylitt.com/2026/04/cognitive-load-design/",
-      "source": "Geoffrey Litt",
-      "reason": "认知负荷理论在界面设计中的实际应用",
-      "summary": "Geoffrey Litt 将认知科学中的认知负荷理论引入界面设计讨论。文章区分了三种认知负荷：内在负荷（任务本身的复杂度）、外在负荷（界面引入的额外认知消耗）、以及生成性负荷（用户主动学习时的认知投入）。作者认为大多数设计师只关注减少外在负荷，却忽视了适当的生成性负荷对用户长期学习的价值。文章通过对比 Notion 和 Linear 的设计哲学，展示了这一理论在实践中的具体体现。"
-    },
-    {
-      "title": "Prompt Engineering is Dead, Long Live System Design",
-      "url": "https://overreacted.io/2026/04/prompt-engineering-system-design/",
-      "source": "Dan Abramov",
-      "reason": "重新定义 LLM 应用的工程化思维框架",
-      "summary": "Dan Abramov 在这篇颇具争议的文章中主张，随着 LLM 能力的提升，单纯的 prompt 技巧正在变得不那么重要，真正的竞争力在于系统设计。他认为未来优秀的 LLM 应用工程师需要像设计分布式系统一样思考 AI 系统：关注数据流、状态管理、错误边界和可观测性。文章提出了 LLM 应用的 12-Factor 框架，涵盖了从 prompt 版本管理到模型降级策略的最佳实践。这对于想要构建可维护 AI 产品的团队来说是一份很好的参考。"
-    }
-  ],
-  "note": ""
+  "generated_at": "2026-04-12 08:34 UTC",
+  "total_fetched": 8,
+  "articles": [],
+  "note": "今日暂无符合条件的新文章，请明天再来。"
 }
