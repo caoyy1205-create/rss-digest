@@ -159,17 +159,43 @@ def get_summary(entry):
     return text[:500]
 
 
+def extract_article_text(html):
+    """Extract main article body from HTML, ignoring nav/sidebar/footer."""
+    # Remove script, style, nav, header, footer, aside, sidebar blocks
+    for tag in ("script", "style", "nav", "header", "footer", "aside"):
+        html = re.sub(
+            rf"<{tag}[^>]*>.*?</{tag}>", " ", html,
+            flags=re.DOTALL | re.IGNORECASE
+        )
+
+    # Try common article content selectors in priority order
+    candidates = [
+        r'<article[^>]*>(.*?)</article>',
+        r'<main[^>]*>(.*?)</main>',
+        r'<div[^>]+class="[^"]*\b(?:post|entry|article|content|body|post-content|entry-content|article-body|post-body)\b[^"]*"[^>]*>(.*?)</div>',
+        r'<div[^>]+id="[^"]*\b(?:post|entry|article|content|main)\b[^"]*"[^>]*>(.*?)</div>',
+    ]
+
+    for pattern in candidates:
+        match = re.search(pattern, html, re.DOTALL | re.IGNORECASE)
+        if match:
+            block = match.group(1) if match.lastindex else match.group(0)
+            text = re.sub(r"<[^>]+>", " ", block)
+            text = re.sub(r"\s+", " ", text).strip()
+            if len(text) > 200:  # ignore tiny matches
+                return text
+
+    # Fallback: strip all tags from full page
+    text = re.sub(r"<[^>]+>", " ", html)
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def fetch_full_text(url):
     try:
         resp = requests.get(url, timeout=FETCH_TIMEOUT,
                             headers={"User-Agent": "RSS-Digest-Bot/1.0"})
         resp.raise_for_status()
-        html = resp.text
-        html = re.sub(r"<(script|style)[^>]*>.*?</(script|style)>", " ",
-                      html, flags=re.DOTALL | re.IGNORECASE)
-        text = re.sub(r"<[^>]+>", " ", html)
-        text = re.sub(r"\s+", " ", text).strip()
-        return text
+        return extract_article_text(resp.text)
     except Exception as e:
         print(f"  [full_text skip] {url}: {e}", file=sys.stderr)
         return ""
