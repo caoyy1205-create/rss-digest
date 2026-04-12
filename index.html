@@ -4,23 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Daily RSS Digest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --lavender:       #7C6FCD;
-      --lavender-light: #EDE9FF;
-      --lavender-mid:   #B8AFEA;
-      --lavender-dark:  #5A4FB0;
-      --bg:             #F8F7FC;
-      --surface:        #FFFFFF;
-      --border:         #E4E1F5;
-      --text:           #1A1825;
-      --text-secondary: #6B6580;
-      --text-muted:     #9B96B0;
-      --shadow:         0 2px 12px rgba(124,111,205,0.10);
-      --shadow-hover:   0 6px 24px rgba(124,111,205,0.18);
-      --radius:         12px;
+      /* Morandi palette — muted, dusty, desaturated */
+      --dust-lavender:  #9E97C0;   /* muted lavender — primary accent */
+      --pale-lavender:  #E8E5F0;   /* very light lavender tint */
+      --warm-white:     #F5F3EE;   /* warm off-white background */
+      --parchment:      #EFECE5;   /* card background */
+      --stone:          #D6D1C8;   /* border / divider */
+      --sage:           #A3AE9A;   /* secondary accent */
+      --ink:            #3A3730;   /* primary text */
+      --ink-mid:        #6B6660;   /* secondary text */
+      --ink-light:      #9A9590;   /* muted text */
+      --shadow-soft:    0 1px 4px rgba(58,55,48,0.06), 0 4px 16px rgba(58,55,48,0.05);
+      --shadow-lift:    0 2px 8px rgba(58,55,48,0.08), 0 8px 28px rgba(58,55,48,0.08);
+      --radius:         4px;
     }
 
     html { scroll-behavior: smooth; }
@@ -28,59 +30,45 @@
     body {
       font-family: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB",
                    "Microsoft YaHei", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
+      background: var(--warm-white);
+      color: var(--ink);
+      line-height: 1.65;
       min-height: 100vh;
     }
 
     /* ── HEADER ── */
     header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 1.5rem;
+      background: var(--warm-white);
+      border-bottom: 1px solid var(--stone);
+      padding: 0 2rem;
       position: sticky;
       top: 0;
       z-index: 50;
     }
 
     .header-inner {
-      max-width: 780px;
+      max-width: 720px;
       margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      height: 64px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: baseline;
-      gap: 0.6rem;
-      flex-shrink: 0;
+      height: 56px;
     }
 
     .brand h1 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--lavender-dark);
+      font-family: 'Lora', Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      color: var(--ink);
     }
 
-    .brand .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--lavender);
-      display: inline-block;
-      margin-bottom: 2px;
-    }
-
-    .subtitle {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      white-space: nowrap;
+    .brand .tagline {
+      font-size: 0.72rem;
+      color: var(--ink-light);
+      margin-top: 1px;
+      letter-spacing: 0.03em;
     }
 
     /* Date selector */
@@ -91,222 +79,236 @@
     }
 
     .date-wrap label {
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      white-space: nowrap;
+      font-size: 0.72rem;
+      color: var(--ink-light);
+      letter-spacing: 0.04em;
     }
 
     select#date-select {
       font-family: inherit;
-      font-size: 0.85rem;
-      color: var(--text);
-      background: var(--lavender-light);
-      border: 1px solid var(--lavender-mid);
-      border-radius: 8px;
-      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+      color: var(--ink);
+      background: var(--parchment);
+      border: 1px solid var(--stone);
+      border-radius: var(--radius);
+      padding: 0.3rem 0.65rem;
       cursor: pointer;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.15s;
+      appearance: none;
+      padding-right: 1.6rem;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239A9590'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.55rem center;
     }
 
-    select#date-select:focus {
-      border-color: var(--lavender);
-    }
+    select#date-select:focus { border-color: var(--dust-lavender); }
 
     /* ── MAIN ── */
     main {
-      max-width: 780px;
+      max-width: 720px;
       margin: 0 auto;
-      padding: 2rem 1.5rem 4rem;
+      padding: 2.5rem 2rem 5rem;
     }
 
     /* Meta bar */
     .meta-bar {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       justify-content: space-between;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--stone);
       flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .date-label {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    .count-badge {
+      font-size: 0.72rem;
+      color: var(--ink-light);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── ARTICLES ── */
+    .articles {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Each article is a section separated by a soft rule */
+    .article-item {
+      padding: 2rem 0;
+      border-bottom: 1px solid var(--stone);
+    }
+
+    .article-item:first-child { padding-top: 0; }
+    .article-item:last-child  { border-bottom: none; }
+
+    /* Article top row: number + meta */
+    .article-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .article-num {
+      font-size: 0.7rem;
+      color: var(--dust-lavender);
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      padding-top: 0.35rem;
+      flex-shrink: 0;
+      width: 1.4rem;
+      text-align: right;
+    }
+
+    .article-meta { flex: 1; }
+
+    .article-title {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 1.1rem;
+      font-weight: 500;
+      line-height: 1.45;
+      color: var(--ink);
+      text-decoration: none;
+      display: block;
+      transition: color 0.15s;
+    }
+
+    .article-title:hover { color: var(--dust-lavender); }
+
+    .article-byline {
+      margin-top: 0.3rem;
+      font-size: 0.72rem;
+      color: var(--ink-light);
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
       gap: 0.5rem;
     }
 
-    .meta-bar .date-label {
-      font-size: 1.35rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--text);
-    }
-
-    .meta-bar .count-badge {
-      font-size: 0.75rem;
-      background: var(--lavender-light);
-      color: var(--lavender-dark);
-      border: 1px solid var(--lavender-mid);
-      border-radius: 20px;
-      padding: 0.2rem 0.75rem;
+    .article-byline .source {
+      color: var(--sage);
       font-weight: 500;
     }
 
-    /* ── CARDS ── */
-    .cards {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+    .article-byline .sep {
+      color: var(--stone);
     }
 
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem 1.75rem;
-      box-shadow: var(--shadow);
-      transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
-      position: relative;
-    }
-
-    .card:hover {
-      box-shadow: var(--shadow-hover);
-      transform: translateY(-2px);
-      border-color: var(--lavender-mid);
-    }
-
-    .card-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 0.6rem;
-    }
-
-    .card-num {
-      flex-shrink: 0;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: var(--lavender-light);
-      color: var(--lavender-dark);
-      font-size: 0.72rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 2px;
-    }
-
-    .card-title-wrap { flex: 1; }
-
-    .card-title {
-      font-size: 1.05rem;
-      font-weight: 600;
-      line-height: 1.4;
-      letter-spacing: -0.01em;
-      color: var(--text);
-      text-decoration: none;
-      display: block;
-    }
-
-    .card-title:hover {
-      color: var(--lavender-dark);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-
-    .card-source {
-      display: inline-block;
-      margin-top: 0.4rem;
-      font-size: 0.72rem;
-      color: var(--lavender);
-      background: var(--lavender-light);
-      border-radius: 6px;
-      padding: 0.15rem 0.55rem;
-      font-weight: 500;
-    }
-
-    .card-reason {
-      margin: 0.85rem 0 0.6rem;
-      font-size: 0.88rem;
-      color: var(--lavender-dark);
+    /* Reason — the AI's one-liner */
+    .article-reason {
+      margin: 0.9rem 0 0 2.4rem;
+      font-size: 0.82rem;
+      color: var(--dust-lavender);
       font-style: italic;
-      display: flex;
-      gap: 0.4rem;
-      align-items: flex-start;
+      line-height: 1.55;
+      padding-left: 0.75rem;
+      border-left: 2px solid var(--pale-lavender);
     }
 
-    .card-reason::before {
-      content: "✦";
+    /* Chinese summary */
+    .article-summary {
+      margin: 0.9rem 0 0 2.4rem;
+      font-size: 0.875rem;
+      color: var(--ink-mid);
+      line-height: 1.8;
+    }
+
+    /* Full article text */
+    .article-full {
+      margin: 1.25rem 0 0 2.4rem;
+    }
+
+    .article-full-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.72rem;
+      color: var(--ink-light);
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      background: none;
+      border: 1px solid var(--stone);
+      border-radius: var(--radius);
+      padding: 0.25rem 0.65rem;
+      transition: border-color 0.15s, color 0.15s;
+      font-family: inherit;
+    }
+
+    .article-full-toggle:hover {
+      border-color: var(--dust-lavender);
+      color: var(--dust-lavender);
+    }
+
+    .article-full-toggle .arrow {
+      display: inline-block;
+      transition: transform 0.2s;
       font-style: normal;
-      font-size: 0.7rem;
-      margin-top: 3px;
-      flex-shrink: 0;
-      color: var(--lavender);
     }
 
-    .card-summary {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      line-height: 1.75;
-      border-top: 1px solid var(--border);
-      padding-top: 0.75rem;
-      margin-top: 0.75rem;
-    }
+    .article-full-toggle.open .arrow { transform: rotate(180deg); }
 
-    .card-full-text {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
+    .article-full-body {
+      display: none;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: var(--ink-mid);
       line-height: 1.85;
-      border-top: 1px solid var(--border);
-      padding-top: 0.75rem;
-      margin-top: 0.75rem;
+      background: var(--parchment);
+      border: 1px solid var(--stone);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
-    .card-full-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 0.5rem;
-      display: block;
-    }
+    .article-full-body.open { display: block; }
 
-    /* ── EMPTY / LOADING STATES ── */
+    /* ── LOADING / EMPTY STATES ── */
     .state-box {
       text-align: center;
-      padding: 4rem 2rem;
-      color: var(--text-muted);
+      padding: 5rem 2rem;
+      color: var(--ink-light);
     }
 
     .state-box .icon {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+      opacity: 0.5;
     }
 
-    .state-box p {
-      font-size: 0.95rem;
-    }
+    .state-box p { font-size: 0.875rem; }
 
     .spinner {
-      width: 32px;
-      height: 32px;
-      border: 3px solid var(--lavender-light);
-      border-top-color: var(--lavender);
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--stone);
+      border-top-color: var(--dust-lavender);
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin: 0 auto 1rem;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 0.75rem;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── FOOTER ── */
     footer {
-      border-top: 1px solid var(--border);
-      background: var(--surface);
-      padding: 1.5rem;
+      border-top: 1px solid var(--stone);
+      padding: 1.5rem 2rem;
     }
 
     .footer-inner {
-      max-width: 780px;
+      max-width: 720px;
       margin: 0 auto;
       display: flex;
       align-items: center;
@@ -315,29 +317,30 @@
       gap: 0.5rem;
     }
 
-    footer p {
-      font-size: 0.78rem;
-      color: var(--text-muted);
+    footer p, footer span {
+      font-size: 0.72rem;
+      color: var(--ink-light);
+      letter-spacing: 0.02em;
     }
 
     footer a {
-      color: var(--lavender);
-      text-decoration: none;
+      color: var(--ink-light);
+      text-decoration: underline;
+      text-underline-offset: 2px;
     }
 
-    footer a:hover { text-decoration: underline; }
-
-    #last-updated {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
+    footer a:hover { color: var(--dust-lavender); }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 600px) {
-      .header-inner { height: auto; padding: 0.85rem 0; flex-wrap: wrap; }
-      .subtitle { display: none; }
-      .card { padding: 1.2rem 1.25rem; }
-      .card-title { font-size: 0.97rem; }
+      header { padding: 0 1.25rem; }
+      main { padding: 2rem 1.25rem 4rem; }
+      footer { padding: 1.25rem; }
+      .brand .tagline { display: none; }
+      .article-reason,
+      .article-summary,
+      .article-full { margin-left: 0; }
+      .article-num { display: none; }
     }
   </style>
 </head>
@@ -348,8 +351,7 @@
     <div class="header-inner">
       <div class="brand">
         <h1>Daily RSS Digest</h1>
-        <span class="dot"></span>
-        <span class="subtitle">AI 精选 · 每日 5 篇值得读的文章</span>
+        <div class="tagline">AI 精选 · 每日 5 篇值得读的文章</div>
       </div>
       <div class="date-wrap">
         <label for="date-select">日期</label>
@@ -364,7 +366,7 @@
       <span class="date-label" id="display-date"></span>
       <span class="count-badge" id="count-badge"></span>
     </div>
-    <div class="cards" id="cards-container">
+    <div class="articles" id="articles-container">
       <div class="state-box">
         <div class="spinner"></div>
         <p>正在加载今日精选…</p>
@@ -375,80 +377,91 @@
   <!-- FOOTER -->
   <footer>
     <div class="footer-inner">
-      <p>数据来源：<a href="https://gist.github.com/emschwartz/e6d2bf860ccc367fe37ff953ba6de66b" target="_blank">HN Popular Blogs 2025</a>，92 个 RSS 订阅源，由 Qwen LLM 每日筛选</p>
+      <p>来源：<a href="https://gist.github.com/emschwartz/e6d2bf860ccc367fe37ff953ba6de66b" target="_blank">HN Popular Blogs 2025</a> · 92 个订阅源 · Qwen 每日筛选</p>
       <span id="last-updated"></span>
     </div>
   </footer>
 
   <script>
-    const dateSelect = document.getElementById('date-select');
-    const cardsContainer = document.getElementById('cards-container');
-    const displayDate = document.getElementById('display-date');
-    const countBadge = document.getElementById('count-badge');
-    const lastUpdated = document.getElementById('last-updated');
+    const dateSelect       = document.getElementById('date-select');
+    const articlesContainer = document.getElementById('articles-container');
+    const displayDate      = document.getElementById('display-date');
+    const countBadge       = document.getElementById('count-badge');
+    const lastUpdated      = document.getElementById('last-updated');
 
     function formatDate(str) {
-      // "2026-04-12" → "2026年4月12日"
       const [y, m, d] = str.split('-');
       return `${y}年${parseInt(m)}月${parseInt(d)}日`;
     }
 
-    function renderCards(data) {
-      displayDate.textContent = formatDate(data.date);
-      lastUpdated.textContent = `最后更新：${data.generated_at}`;
-
-      if (!data.articles || data.articles.length === 0) {
-        countBadge.textContent = '暂无文章';
-        cardsContainer.innerHTML = `
-          <div class="state-box">
-            <div class="icon">📭</div>
-            <p>${data.note || '今日暂无符合条件的新文章，请明天再来。'}</p>
-          </div>`;
-        return;
-      }
-
-      countBadge.textContent = `精选 ${data.articles.length} 篇`;
-
-      cardsContainer.innerHTML = data.articles.map((a, i) => `
-        <article class="card">
-          <div class="card-header">
-            <div class="card-num">${i + 1}</div>
-            <div class="card-title-wrap">
-              <a class="card-title" href="${escHtml(a.url)}" target="_blank" rel="noopener">
-                ${escHtml(a.title)}
-              </a>
-              <span class="card-source">${escHtml(a.source)}</span>
-            </div>
-          </div>
-          <p class="card-reason">${escHtml(a.reason)}</p>
-          <p class="card-summary">${escHtml(a.summary)}</p>
-          ${a.full_text ? `
-          <div class="card-full-text">
-            <span class="card-full-label">原文</span>${escHtml(a.full_text)}
-          </div>` : ''}
-        </article>
-      `).join('');
-    }
-
-    function showError(msg) {
-      cardsContainer.innerHTML = `
-        <div class="state-box">
-          <div class="icon">⚠️</div>
-          <p>${msg}</p>
-        </div>`;
-      countBadge.textContent = '';
-    }
-
     function escHtml(str) {
-      return String(str)
+      return String(str || '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
     }
 
+    function renderArticles(data) {
+      displayDate.textContent  = formatDate(data.date);
+      lastUpdated.textContent  = `更新于 ${data.generated_at}`;
+
+      if (!data.articles || data.articles.length === 0) {
+        countBadge.textContent = '';
+        articlesContainer.innerHTML = `
+          <div class="state-box">
+            <div class="icon">○</div>
+            <p>${escHtml(data.note || '今日暂无符合条件的新文章，请明天再来。')}</p>
+          </div>`;
+        return;
+      }
+
+      countBadge.textContent = `${data.articles.length} 篇`;
+
+      articlesContainer.innerHTML = data.articles.map((a, i) => `
+        <article class="article-item">
+          <div class="article-top">
+            <span class="article-num">0${i + 1}</span>
+            <div class="article-meta">
+              <a class="article-title" href="${escHtml(a.url)}" target="_blank" rel="noopener">
+                ${escHtml(a.title)}
+              </a>
+              <div class="article-byline">
+                <span class="source">${escHtml(a.source)}</span>
+              </div>
+            </div>
+          </div>
+          <p class="article-reason">${escHtml(a.reason)}</p>
+          <p class="article-summary">${escHtml(a.summary)}</p>
+          ${a.full_text ? `
+          <div class="article-full">
+            <button class="article-full-toggle" onclick="toggleFull(this)">
+              原文 <span class="arrow">↓</span>
+            </button>
+            <div class="article-full-body">${escHtml(a.full_text)}</div>
+          </div>` : ''}
+        </article>
+      `).join('');
+    }
+
+    function toggleFull(btn) {
+      btn.classList.toggle('open');
+      btn.nextElementSibling.classList.toggle('open');
+      const isOpen = btn.classList.contains('open');
+      btn.querySelector('.arrow').textContent = isOpen ? '↑' : '↓';
+    }
+
+    function showError(msg) {
+      articlesContainer.innerHTML = `
+        <div class="state-box">
+          <div class="icon">○</div>
+          <p>${escHtml(msg)}</p>
+        </div>`;
+      countBadge.textContent = '';
+    }
+
     async function loadDate(dateStr) {
-      cardsContainer.innerHTML = `
+      articlesContainer.innerHTML = `
         <div class="state-box">
           <div class="spinner"></div>
           <p>正在加载…</p>
@@ -456,8 +469,7 @@
       try {
         const res = await fetch(`data/${dateStr}.json?t=${Date.now()}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        renderCards(data);
+        renderArticles(await res.json());
       } catch (e) {
         showError(`加载失败：${e.message}`);
       }
@@ -467,13 +479,9 @@
       try {
         const res = await fetch(`data/index.json?t=${Date.now()}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const index = await res.json();
-        const dates = index.dates || [];
+        const { dates = [] } = await res.json();
 
-        if (dates.length === 0) {
-          showError('暂无数据，请等待每日更新。');
-          return;
-        }
+        if (!dates.length) { showError('暂无数据，请等待每日更新。'); return; }
 
         dates.forEach(d => {
           const opt = document.createElement('option');
@@ -490,7 +498,6 @@
     }
 
     dateSelect.addEventListener('change', () => loadDate(dateSelect.value));
-
     init();
   </script>
 </body>
