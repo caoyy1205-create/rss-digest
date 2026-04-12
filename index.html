@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily RSS Digest</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --lavender:       #7C6FCD;
+      --lavender-light: #EDE9FF;
+      --lavender-mid:   #B8AFEA;
+      --lavender-dark:  #5A4FB0;
+      --bg:             #F8F7FC;
+      --surface:        #FFFFFF;
+      --border:         #E4E1F5;
+      --text:           #1A1825;
+      --text-secondary: #6B6580;
+      --text-muted:     #9B96B0;
+      --shadow:         0 2px 12px rgba(124,111,205,0.10);
+      --shadow-hover:   0 6px 24px rgba(124,111,205,0.18);
+      --radius:         12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB",
+                   "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-inner {
+      max-width: 780px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      height: 64px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      flex-shrink: 0;
+    }
+
+    .brand h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--lavender-dark);
+    }
+
+    .brand .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--lavender);
+      display: inline-block;
+      margin-bottom: 2px;
+    }
+
+    .subtitle {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Date selector */
+    .date-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .date-wrap label {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    select#date-select {
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: var(--text);
+      background: var(--lavender-light);
+      border: 1px solid var(--lavender-mid);
+      border-radius: 8px;
+      padding: 0.35rem 0.75rem;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    select#date-select:focus {
+      border-color: var(--lavender);
+    }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* Meta bar */
+    .meta-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .meta-bar .date-label {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .meta-bar .count-badge {
+      font-size: 0.75rem;
+      background: var(--lavender-light);
+      color: var(--lavender-dark);
+      border: 1px solid var(--lavender-mid);
+      border-radius: 20px;
+      padding: 0.2rem 0.75rem;
+      font-weight: 500;
+    }
+
+    /* ── CARDS ── */
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.75rem;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+      position: relative;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+      border-color: var(--lavender-mid);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .card-num {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--lavender-light);
+      color: var(--lavender-dark);
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    .card-title-wrap { flex: 1; }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      text-decoration: none;
+      display: block;
+    }
+
+    .card-title:hover {
+      color: var(--lavender-dark);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .card-source {
+      display: inline-block;
+      margin-top: 0.4rem;
+      font-size: 0.72rem;
+      color: var(--lavender);
+      background: var(--lavender-light);
+      border-radius: 6px;
+      padding: 0.15rem 0.55rem;
+      font-weight: 500;
+    }
+
+    .card-reason {
+      margin: 0.85rem 0 0.6rem;
+      font-size: 0.88rem;
+      color: var(--lavender-dark);
+      font-style: italic;
+      display: flex;
+      gap: 0.4rem;
+      align-items: flex-start;
+    }
+
+    .card-reason::before {
+      content: "✦";
+      font-style: normal;
+      font-size: 0.7rem;
+      margin-top: 3px;
+      flex-shrink: 0;
+      color: var(--lavender);
+    }
+
+    .card-summary {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.75;
+      border-top: 1px solid var(--border);
+      padding-top: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    /* ── EMPTY / LOADING STATES ── */
+    .state-box {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-muted);
+    }
+
+    .state-box .icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .state-box p {
+      font-size: 0.95rem;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--lavender-light);
+      border-top-color: var(--lavender);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      padding: 1.5rem;
+    }
+
+    .footer-inner {
+      max-width: 780px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    footer p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      color: var(--lavender);
+      text-decoration: none;
+    }
+
+    footer a:hover { text-decoration: underline; }
+
+    #last-updated {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .header-inner { height: auto; padding: 0.85rem 0; flex-wrap: wrap; }
+      .subtitle { display: none; }
+      .card { padding: 1.2rem 1.25rem; }
+      .card-title { font-size: 0.97rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <h1>Daily RSS Digest</h1>
+        <span class="dot"></span>
+        <span class="subtitle">AI 精选 · 每日 5 篇值得读的文章</span>
+      </div>
+      <div class="date-wrap">
+        <label for="date-select">日期</label>
+        <select id="date-select" aria-label="选择日期"></select>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+    <div class="meta-bar">
+      <span class="date-label" id="display-date"></span>
+      <span class="count-badge" id="count-badge"></span>
+    </div>
+    <div class="cards" id="cards-container">
+      <div class="state-box">
+        <div class="spinner"></div>
+        <p>正在加载今日精选…</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <p>数据来源：<a href="https://gist.github.com/emschwartz/e6d2bf860ccc367fe37ff953ba6de66b" target="_blank">HN Popular Blogs 2025</a>，92 个 RSS 订阅源，由 Qwen LLM 每日筛选</p>
+      <span id="last-updated"></span>
+    </div>
+  </footer>
+
+  <script>
+    const dateSelect = document.getElementById('date-select');
+    const cardsContainer = document.getElementById('cards-container');
+    const displayDate = document.getElementById('display-date');
+    const countBadge = document.getElementById('count-badge');
+    const lastUpdated = document.getElementById('last-updated');
+
+    function formatDate(str) {
+      // "2026-04-12" → "2026年4月12日"
+      const [y, m, d] = str.split('-');
+      return `${y}年${parseInt(m)}月${parseInt(d)}日`;
+    }
+
+    function renderCards(data) {
+      displayDate.textContent = formatDate(data.date);
+      lastUpdated.textContent = `最后更新：${data.generated_at}`;
+
+      if (!data.articles || data.articles.length === 0) {
+        countBadge.textContent = '暂无文章';
+        cardsContainer.innerHTML = `
+          <div class="state-box">
+            <div class="icon">📭</div>
+            <p>${data.note || '今日暂无符合条件的新文章，请明天再来。'}</p>
+          </div>`;
+        return;
+      }
+
+      countBadge.textContent = `精选 ${data.articles.length} 篇`;
+
+      cardsContainer.innerHTML = data.articles.map((a, i) => `
+        <article class="card">
+          <div class="card-header">
+            <div class="card-num">${i + 1}</div>
+            <div class="card-title-wrap">
+              <a class="card-title" href="${escHtml(a.url)}" target="_blank" rel="noopener">
+                ${escHtml(a.title)}
+              </a>
+              <span class="card-source">${escHtml(a.source)}</span>
+            </div>
+          </div>
+          <p class="card-reason">${escHtml(a.reason)}</p>
+          <p class="card-summary">${escHtml(a.summary)}</p>
+        </article>
+      `).join('');
+    }
+
+    function showError(msg) {
+      cardsContainer.innerHTML = `
+        <div class="state-box">
+          <div class="icon">⚠️</div>
+          <p>${msg}</p>
+        </div>`;
+      countBadge.textContent = '';
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function loadDate(dateStr) {
+      cardsContainer.innerHTML = `
+        <div class="state-box">
+          <div class="spinner"></div>
+          <p>正在加载…</p>
+        </div>`;
+      try {
+        const res = await fetch(`data/${dateStr}.json?t=${Date.now()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        renderCards(data);
+      } catch (e) {
+        showError(`加载失败：${e.message}`);
+      }
+    }
+
+    async function init() {
+      try {
+        const res = await fetch(`data/index.json?t=${Date.now()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const index = await res.json();
+        const dates = index.dates || [];
+
+        if (dates.length === 0) {
+          showError('暂无数据，请等待每日更新。');
+          return;
+        }
+
+        dates.forEach(d => {
+          const opt = document.createElement('option');
+          opt.value = d;
+          opt.textContent = formatDate(d);
+          dateSelect.appendChild(opt);
+        });
+
+        dateSelect.value = dates[0];
+        await loadDate(dates[0]);
+      } catch (e) {
+        showError(`初始化失败：${e.message}`);
+      }
+    }
+
+    dateSelect.addEventListener('change', () => loadDate(dateSelect.value));
+
+    init();
+  </script>
+</body>
+</html>
