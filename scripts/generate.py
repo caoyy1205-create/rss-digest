@@ -93,6 +93,13 @@ TOPICS = [
 ]
 
 # Penalty keywords — lower score for off-topic content
+# Sources that consistently block scraping or have no readable content
+BLOCKED_SOURCES = [
+    "red.anthropic.com",
+    "openai.com/blog",
+]
+
+
 PENALTY_KEYWORDS = [
     "recipe", "cooking", "sports", "celebrity", "fashion",
     "horoscope", "lottery", "weather forecast",
@@ -103,7 +110,9 @@ PENALTY_KEYWORDS = [
 ]
 
 
-def score_article(title: str, snippet: str) -> float:
+def score_article(title: str, snippet: str, url: str = "") -> float:
+    if any(blocked in url for blocked in BLOCKED_SOURCES):
+        return -99  # exclude unscrapable sources
     text = (title + " " + snippet).lower()
     score = 0.0
     for topic in TOPICS:
@@ -278,7 +287,7 @@ def fetch_recent_articles(feeds, cutoff):
                 "source": get_source_name(feed, entry),
                 "published": pub.strftime("%Y-%m-%d %H:%M UTC"),
                 "snippet": snippet,
-                "_score": score_article(title, snippet),
+                "_score": score_article(title, snippet, link),
                 "_pub_dt": pub,
                 "_snippet_short": len(snippet) < 120,
                 "_full_snippet": full_snippet,
