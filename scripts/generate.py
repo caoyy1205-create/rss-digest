@@ -148,7 +148,7 @@ def parse_date(entry):
     return None
 
 
-def get_summary(entry):
+def get_text_from_entry(entry, max_chars):
     import html as html_module
     text = getattr(entry, "summary", "") or ""
     if not text:
@@ -158,14 +158,17 @@ def get_summary(entry):
     text = re.sub(r"<[^>]+>", " ", text)
     text = html_module.unescape(text)
     text = re.sub(r"\s+", " ", text).strip()
-    if len(text) <= 500:
+    if len(text) <= max_chars:
         return text
-    # Truncate at last sentence boundary within 500 chars
-    chunk = text[:500]
+    chunk = text[:max_chars]
     last = max(chunk.rfind(". "), chunk.rfind("! "), chunk.rfind("? "))
     if last > 100:
         return chunk[:last + 1]
     return chunk
+
+
+def get_summary(entry):
+    return get_text_from_entry(entry, 500)
 
 
 def extract_article_text(html):
@@ -268,6 +271,7 @@ def fetch_recent_articles(feeds, cutoff):
             if not title or not link:
                 continue
             snippet = get_summary(entry)
+            full_snippet = get_text_from_entry(entry, 3000)
             articles.append({
                 "title": title,
                 "url": link,
@@ -277,6 +281,7 @@ def fetch_recent_articles(feeds, cutoff):
                 "_score": score_article(title, snippet),
                 "_pub_dt": pub,
                 "_snippet_short": len(snippet) < 120,
+                "_full_snippet": full_snippet,
             })
 
     print(f"Fetched {len(articles)} articles from last {LOOKBACK_HOURS}h")
@@ -348,16 +353,20 @@ def main():
         print(f"Fetching full text for {len(selected)} selected articles...")
         for a in selected:
             full = fetch_full_text(a["url"])
-            a["full_text"] = full
-            # If RSS snippet was too short, extract a better summary from full text
-            if a.pop("_snippet_short", False) and full and len(full) > 200:
-                # Take first ~500 chars ending at a sentence boundary
-                chunk = full[:600]
-                last = max(chunk.rfind(". "), chunk.rfind("! "), chunk.rfind("? "))
-                a["summary"] = chunk[:last + 1].strip() if last > 80 else chunk[:500].strip()
-        # Clean up internal fields
+            snippet_short = a.pop("_snippet_short", False)
+            if full:
+                a["full_text"] = full
+                # If RSS snippet was too short, extract a better summary from full text
+                if snippet_short:
+                    chunk = full[:600]
+                    last = max(chunk.rfind(". "), chunk.rfind("! "), chunk.rfind("? "))
+                    a["summary"] = chunk[:last + 1].strip() if last > 80 else chunk[:500].strip()
+            else:
+                # JS-rendered or blocked page — use a longer snippet from the RSS feed
+                # stored in _full_snippet if available, otherwise leave full_text empty
+                a["full_text"] = a.pop("_full_snippet", "")
         for a in selected:
-            a.pop("_snippet_short", None)
+            a.pop("_full_snippet", None)
     else:
         selected = []
 
