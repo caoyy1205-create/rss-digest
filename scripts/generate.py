@@ -60,26 +60,28 @@ TOPICS = [
         "name": "Product & UX",
         "weight": 3,
         "keywords": [
-            "product", "user experience", "ux", "design", "interface",
-            "onboarding", "retention", "growth", "product-market fit",
-            "feature", "roadmap", "launch",
+            "product management", "product strategy", "user experience", "ux research",
+            "product-market fit", "product roadmap", "product design",
+            "onboarding", "retention", "activation", "churn",
+            "software product", "tech product", "app design",
         ],
     },
     {
         "name": "Startup & business",
         "weight": 3,
         "keywords": [
-            "startup", "founder", "venture", "saas", "revenue",
+            "startup", "founder", "venture capital", "saas", "arr", "mrr",
             "business model", "monetiz", "fundrais", "bootstrap",
-            "series a", "series b", "valuation", "exit",
+            "series a", "series b", "valuation", "ipo", "acquisition",
+            "tech company", "silicon valley",
         ],
     },
     {
         "name": "Cognitive & learning",
         "weight": 2,
         "keywords": [
-            "cognitive", "mental model", "learning", "psychology",
-            "decision", "thinking", "interdisciplin", "creativity",
+            "cognitive science", "mental model", "decision making", "psychology",
+            "interdisciplin", "systems thinking", "second-order",
         ],
     },
     {
@@ -87,27 +89,31 @@ TOPICS = [
         "weight": 1,
         "keywords": [
             "prompt engineering", "rag", "fine-tun", "eval", "embedding",
-            "context window", "reasoning model",
+            "context window", "reasoning model", "vector database",
         ],
     },
 ]
 
-# Penalty keywords — lower score for off-topic content
 # Sources that consistently block scraping or have no readable content
 BLOCKED_SOURCES = [
     "red.anthropic.com",
     "openai.com/blog",
 ]
 
-
+# Hard penalty — these topics are never relevant
 PENALTY_KEYWORDS = [
-    "recipe", "cooking", "sports", "celebrity", "fashion",
-    "horoscope", "lottery", "weather forecast",
+    "recipe", "cooking", "sports", "nfl", "nba", "celebrity", "fashion",
+    "horoscope", "lottery", "weather", "movie", "film", "tv show", "album",
+    "james bond", "hollywood", "box office", "oscar",
     "security vulnerability", "cve", "exploit", "malware", "ransomware",
     "sql injection", "buffer overflow", "penetration test",
-    "kernel", "syscall", "assembly", "linker", "compiler internals",
+    "kernel", "syscall", "assembly language", "linker", "compiler internals",
     "network protocol", "tcp/ip", "ethernet", "openwrt",
+    "sponsor", "advertisement", "sponsored",
 ]
+
+# Minimum score to be included — articles scoring below this are dropped entirely
+MIN_SCORE = 2
 
 
 def score_article(title: str, snippet: str, url: str = "") -> float:
@@ -309,7 +315,10 @@ def select_top_articles(articles):
     for a in ranked[:10]:
         print(f"  [{a['_score']:.0f}] {a['title'][:80]}")
 
-    top = ranked[:TOP_N]
+    # Drop articles below minimum relevance threshold
+    qualified = [a for a in ranked if a["_score"] >= MIN_SCORE]
+    print(f"Qualified (score >= {MIN_SCORE}): {len(qualified)} articles")
+    top = qualified[:TOP_N]
 
     # Build output — drop internal fields, add reason from matched topics
     selected = []
