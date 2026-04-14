@@ -329,6 +329,22 @@ def select_top_articles(articles):
     return selected
 
 
+def load_seen_urls() -> set:
+    """Collect all article URLs already shown in previous digests."""
+    seen = set()
+    for f in DATA_DIR.glob("*.json"):
+        if f.name == "index.json":
+            continue
+        try:
+            data = json.loads(f.read_text())
+            for a in data.get("articles", []):
+                if a.get("url"):
+                    seen.add(a["url"])
+        except Exception:
+            pass
+    return seen
+
+
 def update_index(date_str):
     index_path = DATA_DIR / "index.json"
     if index_path.exists():
@@ -356,6 +372,10 @@ def main():
     print(f"Loaded {len(feeds)} feeds")
 
     articles = fetch_recent_articles(feeds, cutoff)
+
+    seen_urls = load_seen_urls()
+    articles = [a for a in articles if a["url"] not in seen_urls]
+    print(f"After dedup: {len(articles)} new articles (excluded {len(seen_urls)} seen URLs)")
 
     if articles:
         selected = select_top_articles(articles)
