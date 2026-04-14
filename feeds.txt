@@ -90,3 +90,14 @@ https://keygen.sh/blog/feed.xml
 https://mjg59.dreamwidth.org/data/rss
 https://computer.rip/rss.xml
 https://www.tedunangst.com/flak/rss
+
+# AI product & news feeds
+https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
+https://techcrunch.com/category/artificial-intelligence/feed/
+https://venturebeat.com/category/ai/feed/
+https://www.wired.com/feed/tag/artificial-intelligence/rss
+https://newsletter.pragmaticengineer.com/feed
+https://www.ben-evans.com/benedictevans/rss.xml
+https://stratechery.com/feed/
+https://every.to/feed.rss
+https://www.lennysnewsletter.com/feed
